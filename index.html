@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Star Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 400px;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #f39c12;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #game-board {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: crosshair;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .star {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #f1c40f;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            transform: scale(1);
+        }
+
+        .star:active {
+            transform: scale(0.8);
+        }
+
+        button {
+            margin-top: 15px;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Catch the Star!</h1>
+        <div class="stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Time: <span id="timer">15</span>s</div>
+        </div>
+        <div id="game-board"></div>
+        <button id="start-btn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+        const board = document.getElementById('game-board');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+
+        let score = 0;
+        let timeLeft = 15;
+        let gameInterval = null;
+        let starTimer = null;
+        let isPlaying = false;
+
+        function startGame() {
+            // Reset state
+            board.innerHTML = '';
+            score = 0;
+            timeLeft = 15;
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+            startBtn.disabled = true;
+            isPlaying = true;
+
+            spawnStar();
+
+            // Countdown timer loop
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function spawnStar() {
+            if (!isPlaying) return;
+
+            // Clear existing star if any
+            board.innerHTML = '';
+
+            const star = document.createElement('div');
+            star.classList.add('star');
+
+            // Random position inside board limits (board size: 400x300, star size: 40x40)
+            const maxX = board.clientWidth - 40;
+            const maxY = board.clientHeight - 40;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            star.style.left = randomX + 'px';
+            star.style.top = randomY + 'px';
+
+            // Add click/tap handler to score points
+            star.addEventListener('click', () => {
+                if (!isPlaying) return;
+                score++;
+                scoreDisplay.textContent = score;
+                clearTimeout(starTimer);
+                spawnStar(); // Spawn next star instantly upon click
+            });
+
+            board.appendChild(star);
+
+            // If player doesn't click within 900ms, move star to a new spot automatically
+            starTimer = setTimeout(() => {
+                spawnStar();
+            }, 900);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            clearTimeout(starTimer);
+            board.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 18px; font-weight: bold; color: #f1c40f;">Game Over! Final Score: ${score}</div>`;
+            startBtn.disabled = false;
+            startBtn.textContent = 'Play Again';
+        }
+    </script>
+</body>
+</html>
+
