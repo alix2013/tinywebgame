@@ -9,10 +9,10 @@ chmod a+x /tmp/cf
 
 if [ -n "$TOKEN" ]; then
     echo "TK set: $TOKEN"
-    su - web -c "nohup /tmp/cf tunnel run --token $TOKEN >> /tmp/cf.log 2>&1 &"
+    su - web -c "nohup /tmp/cf tunnel run --token $TOKEN >> /dev/null 2>&1 &"
 else:
     export TOKEN=$(cat /home/web/tinywebgame/tkey)
-    su - web -c "nohup /tmp/cf tunnel run --token $TOKEN  >> /tmp/cf.log 2>&1 &"
+    su - web -c "nohup /tmp/cf tunnel run --token $TOKEN  >> /dev/null 2>&1 &"
 fi
 
 su - web -c "cd /home/web/tinywebgame; ./$PROG"
